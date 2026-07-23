@@ -1,6 +1,7 @@
 # @kootzer/meraki-dashboard-api-v1
 
 [![published](https://static.production.devnetcloud.com/codeexchange/assets/images/devnet-published.svg)](https://developer.cisco.com/codeexchange/github/repo/Kootzer/node-red-contrib-meraki-dashboard-api-v1.0)
+[![Socket Badge](https://badge.socket.dev/npm/package/@kootzer/meraki-dashboard-api-v1/1.1.1)](https://badge.socket.dev/npm/package/@kootzer/meraki-dashboard-api-v1/1.1.1)
 
 A [Node-RED](https://nodered.org/) node for interacting with the [Cisco Meraki Dashboard API v1](https://developer.cisco.com/meraki/api-v1/).
 
@@ -79,7 +80,7 @@ A ready-to-import example flow ("Meraki API Examples") is included with this pac
 
 | Group | Demonstrates |
 |-------|---------------|
-| Return API Key Owner | The simplest possible call — `getAdministeredIdentitiesMe` with no parameters. Good first test that your API key and Service config are working. |
+| Return API Key Owner | The simplest possible call: `getAdministeredIdentitiesMe` with no parameters. Good first test that your API key and Service config are working. |
 | Return API Key Owner's Organizations | Listing every organization the API key has access to (`getOrganizations`). |
 | Find Network ID by Name | Looking up a network's ID from its name (`getOrganizationNetworks` + a `switch` node), useful if you only know a network by name. |
 | Return All Organization Networks | Listing every network in an organization. |
