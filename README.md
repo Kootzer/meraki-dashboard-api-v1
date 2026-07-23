@@ -73,71 +73,22 @@ See the [Meraki API documentation](https://developer.cisco.com/meraki/api-v1/aut
 | `msg.headers` | object | Response headers |
 | `msg.responseUrl` | string | Final URL after redirects |
 
-### Example Flow to Return API User
+### Example Flows
 
-```json
-[
-    {
-        "id": "trigger",
-        "type": "inject",
-        "name": "Who am I?",
-        "props": [
-            {
-                "p": "payload"
-            }
-        ],
-		"repeat": "",
-        "payload": "",
-        "payloadType": "date",
-        "x": 590,
-        "y": 600,
-        "wires": [
-            [
-                "merakiExample"
-            ]
-        ]
-    },
-    {
-        "id": "merakiExample",
-        "type": "meraki-dashboard-api-v1",
-        "name": "getAdministeredIdentitiesMe",
-        "selectedGroupA": "administered",
-        "selectedGroupB": "monitor",
-        "selectedGroupC": "identities",
-        "selectedMethod": "getAdministeredIdentitiesMe",
-        "filteredMethods": [
-            {
-                "methodTags": [
-                    "administered",
-                    "monitor",
-                    "identities",
-                    "me"
-                ],
-                "methodName": "getAdministeredIdentitiesMe",
-                "parameters": [],
-                "summary": "Returns the identity of the current user.",
-                "path": "/administered/identities/me"
-            }
-        ],
-        "x": 790,
-        "y": 600,
-        "wires": [
-            [
-                "debugExample"
-            ]
-        ]
-    },
-    {
-        "id": "debugExample",
-        "type": "debug",
-        "name": "Output",
-        "active": true,
-        "x": 980,
-        "y": 600,
-        "wires": []
-    }
-]
-```
+A ready-to-import example flow ("Meraki API Examples") is included with this package and appears under **Import → Examples → @kootzer/meraki-dashboard-api-v1** in the Node-RED editor. It contains several grouped, read-only (GET) example use cases:
+
+| Group | Demonstrates |
+|-------|---------------|
+| Return API Key Owner | The simplest possible call — `getAdministeredIdentitiesMe` with no parameters. Good first test that your API key and Service config are working. |
+| Return API Key Owner's Organizations | Listing every organization the API key has access to (`getOrganizations`). |
+| Find Network ID by Name | Looking up a network's ID from its name (`getOrganizationNetworks` + a `switch` node), useful if you only know a network by name. |
+| Return All Organization Networks | Listing every network in an organization. |
+| Org-Wide Client Search | Searching for clients across an organization. |
+| Return All Uplinks Within an Organization | Listing uplink status for every device in an organization. |
+| Return All Organization Network Health Alerts | Listing active assurance alerts across an organization's networks. |
+| Return Organization Device Inventory | Listing an organization's full device inventory. |
+
+Every Meraki node in the example ships with no Service config selected — Node-RED will flag them as needing configuration until you select or create your own Service config with a valid API key.
 
 ## Updating Endpoints
 
@@ -206,7 +157,7 @@ See the [LICENSE](./LICENSE) file for details.
 
 ## Credits
 
-Maintained by [Austin Kutzer](https://github.com/AustinKutzer).
+Maintained by [Austin Kutzer](https://github.com/Kootzer).
 
 This node began as a fork of [Cory Guynn](https://github.com/dexterlabora)'s original `node-red-contrib-meraki-dashboard-api-v1`. Since then it's been rewritten with a generic, data-driven architecture: a single `callEndpoint()` method driven by `endpoints.json` in place of the original's ~500 individually generated methods, cutting the runtime code from roughly 68,000 lines to under 500 while adding full OpenAPI v3 coverage and nearly double the endpoints. Credit to Cory for the original concept and groundwork.
 
