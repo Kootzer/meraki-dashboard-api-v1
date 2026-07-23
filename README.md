@@ -1,4 +1,4 @@
-# @kootz/meraki-dashboard-api-v1
+# @kootzer/meraki-dashboard-api-v1
 
 [![published](https://static.production.devnetcloud.com/codeexchange/assets/images/devnet-published.svg)](https://developer.cisco.com/codeexchange/github/repo/Kootzer/node-red-contrib-meraki-dashboard-api-v1.0)
 
@@ -22,7 +22,7 @@ This node provides access to **957 API endpoints** covering the full Meraki Dash
 Install from npm in your Node-RED user directory (typically `~/.node-red`):
 
 ```bash
-npm install @kootz/meraki-dashboard-api-v1
+npm install @kootzer/meraki-dashboard-api-v1
 ```
 
 Or, to install from a local copy of this folder instead of npm:
@@ -30,7 +30,7 @@ Or, to install from a local copy of this folder instead of npm:
 Copy the 'meraki-dashboard-api-v1' folder into your Node-RED modules directory.
 
 Default location:
-C:\Users\username\\.node-red\node_modules\@kootz\meraki-dashboard-api-v1
+C:\Users\username\\.node-red\node_modules\@kootzer\meraki-dashboard-api-v1
 
 Then restart Node-RED.
 
@@ -146,7 +146,7 @@ This node uses a data-driven architecture. All API endpoints are defined in `end
 To update to the latest Meraki API version:
 
 ```bash
-cd node_modules/@kootz/meraki-dashboard-api-v1
+cd node_modules/@kootzer/meraki-dashboard-api-v1
 node update_from_openapi.js
 node build.js
 ```
