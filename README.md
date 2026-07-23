@@ -1,4 +1,4 @@
-# node-red-contrib-meraki-dashboard-api-v1.0
+# @kootz/meraki-dashboard-api-v1
 
 [![published](https://static.production.devnetcloud.com/codeexchange/assets/images/devnet-published.svg)](https://developer.cisco.com/codeexchange/github/repo/Kootzer/node-red-contrib-meraki-dashboard-api-v1.0)
 
@@ -17,10 +17,18 @@ This node provides access to **898 API endpoints** covering the full Meraki Dash
 
 ## Installation
 
-Copy the 'node-red-contrib-meraki-dashboard-api-v1' folder to your Node-Red modules directory.
+Install from npm in your Node-RED user directory (typically `~/.node-red`):
+
+```bash
+npm install @kootz/meraki-dashboard-api-v1
+```
+
+Or, to install from a local copy of this folder instead of npm:
+
+Copy the 'meraki-dashboard-api-v1' folder into your Node-RED modules directory.
 
 Default location:
-C:\Users\username\\.node-red\node_modules\node-red-contrib-meraki-dashboard-api-v1
+C:\Users\username\\.node-red\node_modules\@kootz\meraki-dashboard-api-v1
 
 Then restart Node-RED.
 
@@ -136,7 +144,7 @@ This node uses a data-driven architecture. All API endpoints are defined in `end
 To update to the latest Meraki API version:
 
 ```bash
-cd node_modules/node-red-contrib-meraki-dashboard-api-v1
+cd node_modules/@kootz/meraki-dashboard-api-v1
 node update_from_openapi.js
 node build.js
 ```
@@ -194,11 +202,11 @@ Then run `node build.js` and restart Node-RED.
 
 This project is licensed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
 
-See the [LICENSE](https://github.com/bakerdist/Node-Red-Meraki-Dashboard-API-v1.0/blob/main/node-red-contrib-meraki-dashboard-api-v1/LICENSE) file for details.
+See the [LICENSE](./LICENSE) file for details.
 
 ## Credits
 
 Originally created by [Cory Guynn](https://github.com/dexterlabora).
-Updated and maintained by [Austin Kutzer](https://github.com/Kootzer).
+Updated and maintained by [Austin Kutzer](https://github.com/AustinKutzer).
 
 The Meraki Dashboard API is developed and maintained by [Cisco Meraki](https://www.meraki.com). This node is a community project and is not officially supported by Cisco.
