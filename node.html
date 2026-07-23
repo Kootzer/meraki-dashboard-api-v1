@@ -295,6 +295,7 @@
     RED.nodes.registerType('meraki-dashboard-api-v1-service', {
         category: 'config',
         defaults: {
+            name: { value: "" },
             host: { value: "https://api.meraki.com/api/v1", required: true },
             secureApiKeyHeaderOrQueryName: { value: "X-Cisco-Meraki-API-Key" },
             secureApiKeyIsQuery: { value: false }
@@ -304,7 +305,7 @@
             temp: { type: 'text' }
         },
         label: function () {
-            return this.host || "Meraki API Service";
+            return this.name || this.host || "Meraki API Service";
         }
     });
 })();
@@ -344,6 +345,10 @@
 </script>
 
 <script type="text/html" data-template-name="meraki-dashboard-api-v1-service">
+    <div class="form-row">
+        <label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-config-input-name" placeholder="Name">
+    </div>
     <div class="form-row">
         <label for="node-config-input-host"><i class="fa fa-globe"></i> API URL</label>
         <input type="text" id="node-config-input-host" placeholder="https://api.meraki.com/api/v1">
