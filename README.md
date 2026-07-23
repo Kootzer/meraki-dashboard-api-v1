@@ -187,9 +187,7 @@ Then run `node build.js` and restart Node-RED.
 
 ## Dependencies
 
-- [request](https://www.npmjs.com/package/request) — HTTP client
-- [q](https://www.npmjs.com/package/q) — Promise library
-- [file-type](https://www.npmjs.com/package/file-type) — File type detection for multipart uploads
+This node has zero runtime dependencies — the HTTP client is built on Node's native `fetch`. Requires Node.js 18 or later (the same minimum Node-RED itself requires as of v3.0).
 
 ## Related Resources
 

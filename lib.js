@@ -1,8 +1,5 @@
 'use strict';
 
-var request = require('request');
-var Q = require('q');
-var fileType = require('file-type');
 var endpoints = require('./endpoints.json');
 
 /**
@@ -46,61 +43,92 @@ MerakiDashboardApi.prototype.setAuthHeaders = function (headerParams) {
 };
 
 /**
+ * Build a URL with query parameters appended
+ * @param {string} baseUrl - the base URL (domain + path)
+ * @param {object} queryParameters - key/value pairs, values may be arrays
+ * @returns {string}
+ */
+function buildUrlWithQuery(baseUrl, queryParameters) {
+    var searchParams = new URLSearchParams();
+    Object.keys(queryParameters).forEach(function (key) {
+        var value = queryParameters[key];
+        if (value === undefined || value === null) {
+            return;
+        }
+        if (Array.isArray(value)) {
+            value.forEach(function (v) { searchParams.append(key, v); });
+        } else {
+            searchParams.append(key, value);
+        }
+    });
+    var qs = searchParams.toString();
+    return qs ? (baseUrl + '?' + qs) : baseUrl;
+}
+
+/**
  * HTTP Request
  * @param {string} method - http method
  * @param {string} url - url to do request
- * @param {object} parameters
  * @param {object} body - body parameters / object
  * @param {object} headers - header parameters
  * @param {object} queryParameters - querystring parameters
- * @param {object} form - form data object
- * @param {object} deferred - promise object
+ * @returns {Promise<{response: object, body: *}>}
  */
-MerakiDashboardApi.prototype.request = function (method, url, parameters, body, headers, queryParameters, form, deferred) {
-    var req = {
+MerakiDashboardApi.prototype.request = function (method, url, body, headers, queryParameters) {
+    var fullUrl = buildUrlWithQuery(url, queryParameters);
+
+    // Normalize header values: this client historically stored header
+    // values as single-element arrays (e.g. headers['Accept'] = ['application/json']).
+    // fetch requires plain string header values.
+    var fetchHeaders = {};
+    Object.keys(headers).forEach(function (key) {
+        var value = headers[key];
+        fetchHeaders[key] = Array.isArray(value) ? value[0] : value;
+    });
+
+    var fetchOptions = {
         method: method,
-        uri: url,
-        qs: queryParameters,
-        headers: headers,
-        body: body,
-        followAllRedirects: true
+        headers: fetchHeaders,
+        redirect: 'follow'
     };
-    if (Object.keys(form).length > 0) {
-        if (req.headers['Content-Type'] && req.headers['Content-Type'][0] === 'multipart/form-data') {
-            delete req.body;
-            var keyName = Object.keys(form)[0];
-            req.formData = {
-                [keyName]: {
-                    value: form[keyName],
-                    options: {
-                        filename: (fileType(form[keyName]) != null ? 'file.' + fileType(form[keyName]).ext : 'file')
-                    }
-                }
+
+    var hasBody = body !== undefined && body !== null &&
+        !(typeof body === 'object' && !(body instanceof Buffer) && Object.keys(body).length === 0);
+    if (hasBody) {
+        if (typeof body === 'object' && !(body instanceof Buffer)) {
+            fetchOptions.body = JSON.stringify(body);
+        } else {
+            fetchOptions.body = body;
+        }
+    }
+
+    return fetch(fullUrl, fetchOptions).then(function (response) {
+        var contentType = response.headers.get('content-type') || '';
+        var isJson = /^application\/(.*\+)?json/.test(contentType);
+
+        var bodyPromise = response.status === 204
+            ? Promise.resolve(undefined)
+            : (isJson ? response.json().catch(function () { return undefined; }) : response.text());
+
+        return bodyPromise.then(function (parsedBody) {
+            var responseInfo = {
+                statusCode: response.status,
+                headers: Object.fromEntries(response.headers.entries()),
+                request: { uri: { href: response.url } }
             };
-        } else {
-            req.form = form;
-        }
-    }
-    if (typeof (body) === 'object' && !(body instanceof Buffer)) {
-        req.json = true;
-    }
-    request(req, function (error, response, body) {
-        if (error) {
-            deferred.reject(error);
-        } else {
-            if (/^application\/(.*\+)?json/.test(response.headers['content-type'])) {
-                try {
-                    body = JSON.parse(body);
-                } catch (e) { }
+
+            if (response.status >= 200 && response.status <= 299) {
+                if (response.status === 204) {
+                    return { response: responseInfo };
+                }
+                return { response: responseInfo, body: parsedBody };
             }
-            if (response.statusCode === 204) {
-                deferred.resolve({ response: response });
-            } else if (response.statusCode >= 200 && response.statusCode <= 299) {
-                deferred.resolve({ response: response, body: body });
-            } else {
-                deferred.reject({ response: response, body: body });
-            }
-        }
+
+            var error = new Error('Request failed with status code ' + response.status);
+            error.response = responseInfo;
+            error.body = parsedBody;
+            throw error;
+        });
     });
 };
 
@@ -116,18 +144,16 @@ endpoints.forEach(function (ep) {
  * Generic API call method - replaces all individual prototype methods
  * @param {string} operationId - the endpoint operation ID
  * @param {object} parameters - all parameters for the call
- * @returns {Promise}
+ * @returns {Promise<{response: object, body: *}>}
  */
 MerakiDashboardApi.prototype.callEndpoint = function (operationId, parameters) {
     if (parameters === undefined) {
         parameters = {};
     }
-    var deferred = Q.defer();
 
     var endpoint = endpointMap[operationId];
     if (!endpoint) {
-        deferred.reject(new Error('Unknown endpoint: ' + operationId));
-        return deferred.promise;
+        return Promise.reject(new Error('Unknown endpoint: ' + operationId));
     }
 
     var domain = this.domain;
@@ -135,11 +161,10 @@ MerakiDashboardApi.prototype.callEndpoint = function (operationId, parameters) {
     var body = {};
     var queryParameters = {};
     var headers = {};
-    var form = {};
 
     headers = this.setAuthHeaders(headers);
-    headers['Accept'] = ['application/json'];
-    headers['Content-Type'] = ['application/json'];
+    headers['Accept'] = 'application/json';
+    headers['Content-Type'] = 'application/json';
 
     // Process parameters based on their definition
     for (var i = 0; i < endpoint.params.length; i++) {
@@ -148,18 +173,16 @@ MerakiDashboardApi.prototype.callEndpoint = function (operationId, parameters) {
         var paramValue = parameters[paramName];
 
         if (paramDef.in === 'path') {
-            path = path.replace('{' + paramName + '}', paramValue);
             if (paramDef.required && paramValue === undefined) {
-                deferred.reject(new Error('Missing required  parameter: ' + paramName));
-                return deferred.promise;
+                return Promise.reject(new Error('Missing required  parameter: ' + paramName));
             }
+            path = path.replace('{' + paramName + '}', paramValue);
         } else if (paramDef.in === 'query') {
             if (paramValue !== undefined) {
                 queryParameters[paramName] = paramValue;
             }
             if (paramDef.required && paramValue === undefined) {
-                deferred.reject(new Error('Missing required  parameter: ' + paramName));
-                return deferred.promise;
+                return Promise.reject(new Error('Missing required  parameter: ' + paramName));
             }
         } else if (paramDef.in === 'body') {
             if (paramValue !== undefined) {
@@ -175,9 +198,7 @@ MerakiDashboardApi.prototype.callEndpoint = function (operationId, parameters) {
         });
     }
 
-    this.request(endpoint.method, domain + path, parameters, body, headers, queryParameters, form, deferred);
-
-    return deferred.promise;
+    return this.request(endpoint.method, domain + path, body, headers, queryParameters);
 };
 
 /**
