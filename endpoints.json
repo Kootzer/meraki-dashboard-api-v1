@@ -408,7 +408,7 @@
       "downlink": {
         "mode": "access",
         "sgt": {
-          "id": 1234
+          "id": "1234"
         },
         "access": {
           "vlan": "1",
@@ -466,7 +466,7 @@
       "monitor",
       "performance"
     ],
-    "summary": "Return the performance score for a single MX"
+    "summary": "Return the performance score for a single Secure Appliance or Secure Router"
   },
   {
     "operationId": "getDeviceAppliancePrefixesDelegated",
@@ -9191,6 +9191,52 @@
     }
   },
   {
+    "operationId": "updateNetworkDevicesSyslogServers",
+    "method": "PUT",
+    "path": "/networks/{networkId}/devices/syslog/servers",
+    "params": [
+      {
+        "name": "networkId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "updateNetworkDevicesSyslogServers",
+        "in": "body",
+        "type": "object",
+        "required": true
+      }
+    ],
+    "tags": [
+      "networks",
+      "configure",
+      "devices",
+      "syslog",
+      "servers"
+    ],
+    "summary": "Updates the syslog servers configuration for a network.",
+    "bodyExample": {
+      "servers": [
+        {
+          "host": "1.2.3.4",
+          "port": 443,
+          "roles": [
+            "wirelessEventLog",
+            "applianceUrlLog"
+          ],
+          "transportProtocol": "UDP",
+          "encryption": {
+            "enabled": true,
+            "certificate": {
+              "id": "1637"
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
     "operationId": "getNetworkEvents",
     "method": "GET",
     "path": "/networks/{networkId}/events",
@@ -15175,6 +15221,45 @@
     "summary": "List the switch stacks in a network"
   },
   {
+    "operationId": "updateNetworkSwitchStack",
+    "method": "PUT",
+    "path": "/networks/{networkId}/switch/stacks/{switchStackId}",
+    "params": [
+      {
+        "name": "networkId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "switchStackId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "updateNetworkSwitchStack",
+        "in": "body",
+        "type": "object",
+        "required": false
+      }
+    ],
+    "tags": [
+      "switch",
+      "configure",
+      "stacks"
+    ],
+    "summary": "Update a switch stack",
+    "bodyExample": {
+      "name": "A cool stack",
+      "members": [
+        {
+          "serial": "QBZY-XWVU-TSRQ"
+        }
+      ]
+    }
+  },
+  {
     "operationId": "deleteNetworkSwitchStack",
     "method": "DELETE",
     "path": "/networks/{networkId}/switch/stacks/{switchStackId}",
@@ -19692,6 +19777,16 @@
             "enabled": true,
             "name": "Guest VLAN"
           }
+        }
+      },
+      "security": {
+        "encryption": {
+          "ciphers": [
+            "CCMP 128"
+          ],
+          "akms": [
+            "SAE"
+          ]
         }
       },
       "localAuthFallback": {
@@ -28462,6 +28557,99 @@
     "summary": "Return an overview of current device statuses"
   },
   {
+    "operationId": "getOrganizationDevicesSyslogServersByNetwork",
+    "method": "GET",
+    "path": "/organizations/{organizationId}/devices/syslog/servers/byNetwork",
+    "params": [
+      {
+        "name": "organizationId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "perPage",
+        "in": "query",
+        "type": "integer",
+        "required": false
+      },
+      {
+        "name": "startingAfter",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "endingBefore",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "networkIds",
+        "in": "query",
+        "type": "array",
+        "required": false
+      }
+    ],
+    "tags": [
+      "organizations",
+      "configure",
+      "devices",
+      "syslog",
+      "servers",
+      "byNetwork"
+    ],
+    "summary": "Returns syslog servers configured for the networks within an organization."
+  },
+  {
+    "operationId": "getOrganizationDevicesSyslogServersRolesByNetwork",
+    "method": "GET",
+    "path": "/organizations/{organizationId}/devices/syslog/servers/roles/byNetwork",
+    "params": [
+      {
+        "name": "organizationId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "perPage",
+        "in": "query",
+        "type": "integer",
+        "required": false
+      },
+      {
+        "name": "startingAfter",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "endingBefore",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "networkIds",
+        "in": "query",
+        "type": "array",
+        "required": false
+      }
+    ],
+    "tags": [
+      "organizations",
+      "configure",
+      "devices",
+      "syslog",
+      "servers",
+      "roles",
+      "byNetwork"
+    ],
+    "summary": "Returns roles that can be assigned to a syslog server for a given network."
+  },
+  {
     "operationId": "getOrganizationDevicesSystemMemoryUsageHistoryByInterval",
     "method": "GET",
     "path": "/organizations/{organizationId}/devices/system/memory/usage/history/byInterval",
@@ -31651,7 +31839,7 @@
       "configure",
       "policyObjects"
     ],
-    "summary": "Creates a new Policy Object.",
+    "summary": "Creates a new Policy Object",
     "bodyExample": {
       "name": "Web Servers - Datacenter 10",
       "category": "network",
@@ -31892,7 +32080,7 @@
       "configure",
       "policyObjects"
     ],
-    "summary": "Updates a Policy Object.",
+    "summary": "Updates a Policy Object",
     "bodyExample": {
       "name": "Web Servers - Datacenter 10",
       "cidr": "10.0.0.0/24",

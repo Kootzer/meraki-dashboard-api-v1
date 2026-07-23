@@ -4,7 +4,9 @@
 
 A [Node-RED](https://nodered.org/) node for interacting with the [Cisco Meraki Dashboard API v1](https://developer.cisco.com/meraki/api-v1/).
 
-This node provides access to **898 API endpoints** covering the full Meraki Dashboard API v1.71.0, including devices, networks, organizations, appliances, switches, wireless, cameras, sensors, and more. All endpoints utilize OpenAPI Specification version 3, pulled directly from Meraki's [spec3.json](https://raw.githubusercontent.com/meraki/openapi/master/openapi/spec3.json) file from GitHub.
+This node provides access to **957 API endpoints** covering the full Meraki Dashboard API v1.72.0, including devices, networks, organizations, appliances, switches, wireless, cameras, sensors, and more. All endpoints utilize OpenAPI Specification version 3, pulled directly from Meraki's [spec3.json](https://raw.githubusercontent.com/meraki/openapi/master/openapi/spec3.json) file from GitHub.
+
+> **Note:** This endpoint count reflects Meraki's stable, generally-available (GA) API spec only. Cisco's [changelog](https://developer.cisco.com/meraki/whats-new/) may cite a higher total that also includes [Early API Access](https://developer.cisco.com/meraki/api-v1/api-reference-early-access-overview/) (beta) operations, which are excluded here since they're subject to breaking changes without notice.
 
 ## Features
 
@@ -206,7 +208,8 @@ See the [LICENSE](./LICENSE) file for details.
 
 ## Credits
 
-Originally created by [Cory Guynn](https://github.com/dexterlabora).
-Updated and maintained by [Austin Kutzer](https://github.com/AustinKutzer).
+Maintained by [Austin Kutzer](https://github.com/AustinKutzer).
+
+This node began as a fork of [Cory Guynn](https://github.com/dexterlabora)'s original `node-red-contrib-meraki-dashboard-api-v1`. Since then it's been rewritten with a generic, data-driven architecture: a single `callEndpoint()` method driven by `endpoints.json` in place of the original's ~500 individually generated methods, cutting the runtime code from roughly 68,000 lines to under 500 while adding full OpenAPI v3 coverage and nearly double the endpoints. Credit to Cory for the original concept and groundwork.
 
 The Meraki Dashboard API is developed and maintained by [Cisco Meraki](https://www.meraki.com). This node is a community project and is not officially supported by Cisco.
