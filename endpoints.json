@@ -1791,6 +1791,7 @@
     ],
     "summary": "Enqueue a job to request the MAC table from the device",
     "bodyExample": {
+      "mac": "00:11:22:a0:b1:c2",
       "callback": {
         "url": "https://webhook.site/28efa24e-f830-4d9f-a12b-fbb9e5035031",
         "sharedSecret": "secret",
@@ -4380,21 +4381,6 @@
               "parent": "primary"
             }
           ]
-        },
-        "loadBalancing": {
-          "enabled": true,
-          "vlanSelection": {
-            "mode": "auto",
-            "byDevice": [
-              {
-                "serial": "Q234-ABCD-5678",
-                "vlanIds": [
-                  1,
-                  2
-                ]
-              }
-            ]
-          }
         }
       }
     }
@@ -6118,7 +6104,8 @@
       "name": "My route",
       "subnet": "192.168.1.0/24",
       "gatewayIp": "1.2.3.5",
-      "gatewayVlanId": 100
+      "gatewayVlanId": 100,
+      "enabled": true
     }
   },
   {
@@ -7209,6 +7196,11 @@
       "mandatoryDhcp": {
         "enabled": true
       },
+      "vpn": {
+        "advertisement": {
+          "enabled": true
+        }
+      },
       "adaptivePolicyGroupId": "1234",
       "sgt": {
         "id": 1234
@@ -8145,6 +8137,31 @@
       ],
       "notes": "This cluster is for New York Office"
     }
+  },
+  {
+    "operationId": "deleteNetworkCampusGatewayCluster",
+    "method": "DELETE",
+    "path": "/networks/{networkId}/campusGateway/clusters/{clusterId}",
+    "params": [
+      {
+        "name": "networkId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "clusterId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "tags": [
+      "campusGateway",
+      "configure",
+      "clusters"
+    ],
+    "summary": "Delete a cluster"
   },
   {
     "operationId": "updateNetworkCellularGatewayConnectivityMonitoringDestinations",
@@ -9410,6 +9427,7 @@
       "products": {
         "wireless": {
           "nextUpgrade": {
+            "strategy": "minimizeUpgradeTime",
             "predownload": {
               "enabled": false
             },
@@ -9474,6 +9492,16 @@
           },
           "participateInNextBetaRelease": false
         },
+        "campusGateway": {
+          "nextUpgrade": {
+            "strategy": "minimizeUpgradeTime",
+            "time": "2019-03-17T17:22:52Z",
+            "toVersion": {
+              "id": "1007"
+            }
+          },
+          "participateInNextBetaRelease": false
+        },
         "secureConnect": {
           "nextUpgrade": {
             "time": "2019-03-17T17:22:52Z",
@@ -9492,7 +9520,16 @@
           },
           "participateInNextBetaRelease": false
         }
-      }
+      },
+      "featureLossAcknowledgements": [
+        {
+          "networkId": "N_1234",
+          "productType": "wireless",
+          "removedFeatureCheckNames": [
+            "snmp-device-access-check"
+          ]
+        }
+      ]
     }
   },
   {
@@ -13066,6 +13103,24 @@
         "required": true
       },
       {
+        "name": "perPage",
+        "in": "query",
+        "type": "integer",
+        "required": false
+      },
+      {
+        "name": "startingAfter",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "endingBefore",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
         "name": "payloadTypes",
         "in": "query",
         "type": "array",
@@ -13077,7 +13132,7 @@
       "configure",
       "profiles"
     ],
-    "summary": "List all profiles in a network"
+    "summary": "List profiles in a network"
   },
   {
     "operationId": "createNetworkSmTargetGroup",
@@ -19703,6 +19758,11 @@
       "radiusAccountingInterimInterval": 5,
       "radiusAttributeForGroupPolicies": "Filter-Id",
       "ipAssignmentMode": "NAT mode",
+      "campusGateway": {
+        "cluster": {
+          "id": "10"
+        }
+      },
       "useVlanTagging": false,
       "concentratorNetworkId": "N_24329156",
       "secondaryConcentratorNetworkId": "disabled",
@@ -23837,7 +23897,7 @@
       "vpn",
       "stats"
     ],
-    "summary": "Show VPN history stat for networks in an organization"
+    "summary": "Show VPN history stats for networks in an organization"
   },
   {
     "operationId": "getOrganizationApplianceVpnStatuses",
@@ -24679,6 +24739,190 @@
     "summary": "Returns historical health alert overviews"
   },
   {
+    "operationId": "createOrganizationAssuranceAlertsProfile",
+    "method": "POST",
+    "path": "/organizations/{organizationId}/assurance/alerts/profiles",
+    "params": [
+      {
+        "name": "organizationId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "createOrganizationAssuranceAlertsProfile",
+        "in": "body",
+        "type": "object",
+        "required": true
+      }
+    ],
+    "tags": [
+      "organizations",
+      "configure",
+      "alerts",
+      "profiles"
+    ],
+    "summary": "Create an alert profile",
+    "bodyExample": {
+      "name": "alert_profile_1",
+      "networkIds": [
+        "N_123657123",
+        "N_9876143"
+      ],
+      "alertTypes": [
+        "unreachable",
+        "vlan_mismatch"
+      ],
+      "alertScheduleId": "9876543210",
+      "configuration": {
+        "enabled": true,
+        "maintenance": {
+          "silencing": {
+            "enabled": true
+          }
+        },
+        "alertDestinations": {
+          "email": {
+            "enabled": true,
+            "recipients": [
+              "miles@meraki.net"
+            ]
+          },
+          "sms": {
+            "enabled": true,
+            "recipients": [
+              "+1 (999) 999-1111"
+            ]
+          },
+          "webhook": {
+            "enabled": true,
+            "recipients": [
+              "aHR0cHM6Ly9nb29nbGUuY29tL2Zha2U="
+            ]
+          }
+        }
+      }
+    }
+  },
+  {
+    "operationId": "getOrganizationAssuranceAlertsProfiles",
+    "method": "GET",
+    "path": "/organizations/{organizationId}/assurance/alerts/profiles",
+    "params": [
+      {
+        "name": "organizationId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "tags": [
+      "organizations",
+      "configure",
+      "alerts",
+      "profiles"
+    ],
+    "summary": "List the alert profiles for this organization"
+  },
+  {
+    "operationId": "updateOrganizationAssuranceAlertsProfile",
+    "method": "PUT",
+    "path": "/organizations/{organizationId}/assurance/alerts/profiles/{profileId}",
+    "params": [
+      {
+        "name": "organizationId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "profileId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "updateOrganizationAssuranceAlertsProfile",
+        "in": "body",
+        "type": "object",
+        "required": true
+      }
+    ],
+    "tags": [
+      "organizations",
+      "configure",
+      "alerts",
+      "profiles"
+    ],
+    "summary": "Update an alert profile",
+    "bodyExample": {
+      "name": "alert_profile_1",
+      "networkIds": [
+        "N_123657123",
+        "N_9876143"
+      ],
+      "alertTypes": [
+        "unreachable",
+        "vlan_mismatch"
+      ],
+      "alertScheduleId": "9876543210",
+      "configuration": {
+        "enabled": true,
+        "maintenance": {
+          "silencing": {
+            "enabled": true
+          }
+        },
+        "alertDestinations": {
+          "email": {
+            "enabled": true,
+            "recipients": [
+              "miles@meraki.net"
+            ]
+          },
+          "sms": {
+            "enabled": true,
+            "recipients": [
+              "+1 (999) 999-1111"
+            ]
+          },
+          "webhook": {
+            "enabled": true,
+            "recipients": [
+              "aHR0cHM6Ly9nb29nbGUuY29tL2Zha2U="
+            ]
+          }
+        }
+      }
+    }
+  },
+  {
+    "operationId": "deleteOrganizationAssuranceAlertsProfile",
+    "method": "DELETE",
+    "path": "/organizations/{organizationId}/assurance/alerts/profiles/{profileId}",
+    "params": [
+      {
+        "name": "organizationId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "profileId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "tags": [
+      "organizations",
+      "configure",
+      "alerts",
+      "profiles"
+    ],
+    "summary": "Delete an alert profile for this organization"
+  },
+  {
     "operationId": "restoreOrganizationAssuranceAlerts",
     "method": "POST",
     "path": "/organizations/{organizationId}/assurance/alerts/restore",
@@ -24775,6 +25019,68 @@
       "alerts"
     ],
     "summary": "Return a singular Health Alert by its id"
+  },
+  {
+    "operationId": "getOrganizationAssuranceImpactedDeviceWirelessByNetwork",
+    "method": "GET",
+    "path": "/organizations/{organizationId}/assurance/impactedDevice/wireless/byNetwork",
+    "params": [
+      {
+        "name": "organizationId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "networkGroupIds",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "t0",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "t1",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "timespan",
+        "in": "query",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "perPage",
+        "in": "query",
+        "type": "integer",
+        "required": false
+      },
+      {
+        "name": "startingAfter",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "endingBefore",
+        "in": "query",
+        "type": "string",
+        "required": false
+      }
+    ],
+    "tags": [
+      "wireless",
+      "monitor",
+      "impactedDevice",
+      "byNetwork"
+    ],
+    "summary": "Returns count of impacted wireless devices per network on a given organization and time range."
   },
   {
     "operationId": "createOrganizationBrandingPolicy",
@@ -25367,6 +25673,7 @@
         {
           "tag": "reception-desk",
           "id": "",
+          "inNetworksWithId": "L_2568",
           "permissionScopeId": "1"
         }
       ],
@@ -25374,6 +25681,11 @@
         {
           "tag": "building-a",
           "id": "",
+          "permissionScopeId": "2"
+        },
+        {
+          "tag": "",
+          "id": "N_2568",
           "permissionScopeId": "2"
         }
       ],
@@ -25441,6 +25753,7 @@
         {
           "tag": "reception-desk",
           "id": "",
+          "inNetworksWithId": "L_2568",
           "permissionScopeId": "1"
         }
       ],
@@ -25448,6 +25761,11 @@
         {
           "tag": "building-a",
           "id": "",
+          "permissionScopeId": "2"
+        },
+        {
+          "tag": "",
+          "id": "N_2568",
           "permissionScopeId": "2"
         }
       ],
@@ -25511,6 +25829,88 @@
     "summary": "Retrieve a single role."
   },
   {
+    "operationId": "getOrganizationCampusGatewayClientsUsageByNetworkByCluster",
+    "method": "GET",
+    "path": "/organizations/{organizationId}/campusGateway/clients/usage/byNetwork/byCluster",
+    "params": [
+      {
+        "name": "organizationId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "perPage",
+        "in": "query",
+        "type": "integer",
+        "required": false
+      },
+      {
+        "name": "startingAfter",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "endingBefore",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "t0",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "t1",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "timespan",
+        "in": "query",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "networkIds",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "networkGroupIds",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "clusterIds",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "usageUnits",
+        "in": "query",
+        "type": "string",
+        "required": false
+      }
+    ],
+    "tags": [
+      "campusGateway",
+      "monitor",
+      "clients",
+      "usage",
+      "byNetwork",
+      "byCluster"
+    ],
+    "summary": "Returns client usage details for campus gateway clusters within an organization."
+  },
+  {
     "operationId": "getOrganizationCampusGatewayClusters",
     "method": "GET",
     "path": "/organizations/{organizationId}/campusGateway/clusters",
@@ -25552,6 +25952,585 @@
       "clusters"
     ],
     "summary": "Get the details of campus gateway clusters"
+  },
+  {
+    "operationId": "getOrganizationCampusGatewayClustersFailoverTargets",
+    "method": "GET",
+    "path": "/organizations/{organizationId}/campusGateway/clusters/failover/targets",
+    "params": [
+      {
+        "name": "organizationId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "networkIds",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "clusterIds",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "perPage",
+        "in": "query",
+        "type": "integer",
+        "required": false
+      },
+      {
+        "name": "startingAfter",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "endingBefore",
+        "in": "query",
+        "type": "string",
+        "required": false
+      }
+    ],
+    "tags": [
+      "campusGateway",
+      "configure",
+      "clusters",
+      "failover",
+      "targets"
+    ],
+    "summary": "List the details of a Failover Targets for a Campus Gateway cluster"
+  },
+  {
+    "operationId": "getOrganizationCampusGatewayClustersFailoverTargetsByCluster",
+    "method": "GET",
+    "path": "/organizations/{organizationId}/campusGateway/clusters/failover/targets/byCluster",
+    "params": [
+      {
+        "name": "organizationId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "networkIds",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "clusterIds",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "perPage",
+        "in": "query",
+        "type": "integer",
+        "required": false
+      },
+      {
+        "name": "startingAfter",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "endingBefore",
+        "in": "query",
+        "type": "string",
+        "required": false
+      }
+    ],
+    "tags": [
+      "campusGateway",
+      "configure",
+      "clusters",
+      "failover",
+      "targets",
+      "byCluster"
+    ],
+    "summary": "Get available backup cluster targets for campus gateway failover configuration"
+  },
+  {
+    "operationId": "getOrganizationCampusGatewayClustersNetworksOverviews",
+    "method": "GET",
+    "path": "/organizations/{organizationId}/campusGateway/clusters/networks/overviews",
+    "params": [
+      {
+        "name": "organizationId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "clusterIds",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "siteIds",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "networkIds",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "tunnelingSources",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "search",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "sortBy",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "sortOrder",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "perPage",
+        "in": "query",
+        "type": "integer",
+        "required": false
+      },
+      {
+        "name": "startingAfter",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "endingBefore",
+        "in": "query",
+        "type": "string",
+        "required": false
+      }
+    ],
+    "tags": [
+      "campusGateway",
+      "configure",
+      "clusters",
+      "networks",
+      "overviews"
+    ],
+    "summary": "List networks tunneling through Campus Gateway clusters with their AP, ssids and client counts"
+  },
+  {
+    "operationId": "provisionOrganizationCampusGatewayClusters",
+    "method": "POST",
+    "path": "/organizations/{organizationId}/campusGateway/clusters/provision",
+    "params": [
+      {
+        "name": "organizationId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "provisionOrganizationCampusGatewayClusters",
+        "in": "body",
+        "type": "object",
+        "required": true
+      }
+    ],
+    "tags": [
+      "campusGateway",
+      "configure",
+      "clusters"
+    ],
+    "summary": "Provisions a cluster,adds campus gateways to it and associate/dissociate failover targets.",
+    "bodyExample": {
+      "clusterId": "1284392014818",
+      "network": {
+        "id": "N_1234"
+      },
+      "name": "North Campus",
+      "uplinks": [
+        {
+          "interface": "man1",
+          "vlan": 5,
+          "addresses": [
+            {
+              "assignmentMode": "static",
+              "protocol": "ipv4",
+              "gateway": "1.2.3.5",
+              "subnetMask": "255.255.255.0"
+            }
+          ]
+        }
+      ],
+      "tunnels": [
+        {
+          "uplink": {
+            "interface": "man1"
+          },
+          "interface": "tun1",
+          "vlan": 6,
+          "addresses": [
+            {
+              "protocol": "ipv4",
+              "gateway": "2.3.5.6",
+              "subnetMask": "255.255.255.0"
+            }
+          ]
+        }
+      ],
+      "nameservers": {
+        "addresses": [
+          "8.8.8.8",
+          "8.8.4.4"
+        ]
+      },
+      "portChannels": [
+        {
+          "id": "1284392014830",
+          "name": "Port-channel1",
+          "vlan": 25,
+          "allowedVlans": "10-20"
+        }
+      ],
+      "devices": [
+        {
+          "serial": "Q234-ABCD-0001",
+          "uplinks": [
+            {
+              "interface": "man1",
+              "addresses": [
+                {
+                  "protocol": "ipv4",
+                  "address": "5.1.2.3"
+                }
+              ]
+            }
+          ],
+          "tunnels": [
+            {
+              "interface": "tun1",
+              "addresses": [
+                {
+                  "protocol": "ipv4",
+                  "address": "6.2.6.7"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "failover": {
+        "targets": [
+          {
+            "clusterId": "1284392014819",
+            "priority": 1
+          }
+        ]
+      },
+      "notes": "This cluster is for New York Office"
+    }
+  },
+  {
+    "operationId": "getOrganizationCampusGatewayClustersSsids",
+    "method": "GET",
+    "path": "/organizations/{organizationId}/campusGateway/clusters/ssids",
+    "params": [
+      {
+        "name": "organizationId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "clusterIds",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "networkIds",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "search",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "sortBy",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "sortOrder",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "perPage",
+        "in": "query",
+        "type": "integer",
+        "required": false
+      },
+      {
+        "name": "startingAfter",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "endingBefore",
+        "in": "query",
+        "type": "string",
+        "required": false
+      }
+    ],
+    "tags": [
+      "campusGateway",
+      "configure",
+      "clusters",
+      "ssids"
+    ],
+    "summary": "List SSIDs tunneling through Campus Gateway clusters"
+  },
+  {
+    "operationId": "getOrganizationCampusGatewayClustersTunnelable",
+    "method": "GET",
+    "path": "/organizations/{organizationId}/campusGateway/clusters/tunnelable",
+    "params": [
+      {
+        "name": "organizationId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "fromNetworkIds",
+        "in": "query",
+        "type": "array",
+        "required": true
+      },
+      {
+        "name": "excludeSsidNumbers",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "perPage",
+        "in": "query",
+        "type": "integer",
+        "required": false
+      },
+      {
+        "name": "startingAfter",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "endingBefore",
+        "in": "query",
+        "type": "string",
+        "required": false
+      }
+    ],
+    "tags": [
+      "campusGateway",
+      "configure",
+      "clusters",
+      "tunnelable"
+    ],
+    "summary": "List available campus gateway clusters that can be used for wireless network tunneling"
+  },
+  {
+    "operationId": "getOrganizationCampusGatewayConnections",
+    "method": "GET",
+    "path": "/organizations/{organizationId}/campusGateway/connections",
+    "params": [
+      {
+        "name": "organizationId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "networkIds",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "serials",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "campusGatewaySerials",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "campusGatewayClusterIds",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "campusGatewayTunnelStatuses",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "search",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "models",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "dataEncryptionStatuses",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "sortBy",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "sortOrder",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "perPage",
+        "in": "query",
+        "type": "integer",
+        "required": false
+      },
+      {
+        "name": "startingAfter",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "endingBefore",
+        "in": "query",
+        "type": "string",
+        "required": false
+      }
+    ],
+    "tags": [
+      "campusGateway",
+      "configure",
+      "connections"
+    ],
+    "summary": "List the details of APs tunneling through the Campus Gateway clusters"
+  },
+  {
+    "operationId": "getOrganizationCampusGatewayConnectionsOverview",
+    "method": "GET",
+    "path": "/organizations/{organizationId}/campusGateway/connections/overview",
+    "params": [
+      {
+        "name": "organizationId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "networkIds",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "serials",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "campusGatewaySerials",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "campusGatewayClusterIds",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "campusGatewayTunnelStatuses",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "search",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "models",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "dataEncryptionStatuses",
+        "in": "query",
+        "type": "array",
+        "required": false
+      }
+    ],
+    "tags": [
+      "campusGateway",
+      "configure",
+      "connections",
+      "overview"
+    ],
+    "summary": "List the count of connections(APs) with tunneling status up and down through the Campus Gateway clusters"
   },
   {
     "operationId": "getOrganizationCampusGatewayDevicesUplinksLocalOverridesByDevice",
@@ -30479,6 +31458,262 @@
     }
   },
   {
+    "operationId": "createOrganizationNetworksGroup",
+    "method": "POST",
+    "path": "/organizations/{organizationId}/networks/groups",
+    "params": [
+      {
+        "name": "organizationId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "createOrganizationNetworksGroup",
+        "in": "body",
+        "type": "object",
+        "required": true
+      }
+    ],
+    "tags": [
+      "organizations",
+      "configure",
+      "networks",
+      "groups"
+    ],
+    "summary": "Create a network group",
+    "bodyExample": {
+      "name": "Main campus"
+    }
+  },
+  {
+    "operationId": "getOrganizationNetworksGroups",
+    "method": "GET",
+    "path": "/organizations/{organizationId}/networks/groups",
+    "params": [
+      {
+        "name": "organizationId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "groupIds",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "perPage",
+        "in": "query",
+        "type": "integer",
+        "required": false
+      },
+      {
+        "name": "startingAfter",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "endingBefore",
+        "in": "query",
+        "type": "string",
+        "required": false
+      }
+    ],
+    "tags": [
+      "organizations",
+      "configure",
+      "networks",
+      "groups"
+    ],
+    "summary": "List the network groups in an organization"
+  },
+  {
+    "operationId": "getOrganizationNetworksGroupsOverviewByGroup",
+    "method": "GET",
+    "path": "/organizations/{organizationId}/networks/groups/overview/byGroup",
+    "params": [
+      {
+        "name": "organizationId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "sortBy",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "perPage",
+        "in": "query",
+        "type": "integer",
+        "required": false
+      },
+      {
+        "name": "startingAfter",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "endingBefore",
+        "in": "query",
+        "type": "string",
+        "required": false
+      }
+    ],
+    "tags": [
+      "organizations",
+      "monitor",
+      "networks",
+      "groups",
+      "overview",
+      "byGroup"
+    ],
+    "summary": "List the client and status overview information for the network groups in an organization"
+  },
+  {
+    "operationId": "updateOrganizationNetworksGroup",
+    "method": "PUT",
+    "path": "/organizations/{organizationId}/networks/groups/{groupId}",
+    "params": [
+      {
+        "name": "organizationId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "groupId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "updateOrganizationNetworksGroup",
+        "in": "body",
+        "type": "object",
+        "required": true
+      }
+    ],
+    "tags": [
+      "organizations",
+      "configure",
+      "networks",
+      "groups"
+    ],
+    "summary": "Update a network group",
+    "bodyExample": {
+      "name": "Main campus"
+    }
+  },
+  {
+    "operationId": "deleteOrganizationNetworksGroup",
+    "method": "DELETE",
+    "path": "/organizations/{organizationId}/networks/groups/{groupId}",
+    "params": [
+      {
+        "name": "organizationId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "groupId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "tags": [
+      "organizations",
+      "configure",
+      "networks",
+      "groups"
+    ],
+    "summary": "Delete a network group"
+  },
+  {
+    "operationId": "bulkOrganizationNetworksGroupAssign",
+    "method": "POST",
+    "path": "/organizations/{organizationId}/networks/groups/{groupId}/bulkAssign",
+    "params": [
+      {
+        "name": "organizationId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "groupId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "bulkOrganizationNetworksGroupAssign",
+        "in": "body",
+        "type": "object",
+        "required": true
+      }
+    ],
+    "tags": [
+      "organizations",
+      "configure",
+      "networks",
+      "groups"
+    ],
+    "summary": "Add networks to a network group",
+    "bodyExample": {
+      "networkIds": [
+        "N_839506",
+        "N_17389"
+      ]
+    }
+  },
+  {
+    "operationId": "bulkOrganizationNetworksGroupUnassign",
+    "method": "POST",
+    "path": "/organizations/{organizationId}/networks/groups/{groupId}/bulkUnassign",
+    "params": [
+      {
+        "name": "organizationId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "groupId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "bulkOrganizationNetworksGroupUnassign",
+        "in": "body",
+        "type": "object",
+        "required": true
+      }
+    ],
+    "tags": [
+      "organizations",
+      "configure",
+      "networks",
+      "groups"
+    ],
+    "summary": "Remove networks from a network group",
+    "bodyExample": {
+      "networkIds": [
+        "N_839506",
+        "N_17389"
+      ]
+    }
+  },
+  {
     "operationId": "createNetworkMove",
     "method": "POST",
     "path": "/organizations/{organizationId}/networks/moves",
@@ -32763,7 +33998,7 @@
         "name": "attachOrganizationSaseSites",
         "in": "body",
         "type": "object",
-        "required": false
+        "required": true
       }
     ],
     "tags": [
@@ -32783,17 +34018,7 @@
             "slug": "us-west-1"
           }
         }
-      ],
-      "callback": {
-        "url": "https://webhook.site/28efa24e-f830-4d9f-a12b-fbb9e5035031",
-        "sharedSecret": "secret",
-        "httpServer": {
-          "id": "aHR0cHM6Ly93d3cuZXhhbXBsZS5jb20vd2ViaG9va3M="
-        },
-        "payloadTemplate": {
-          "id": "wpt_2100"
-        }
-      }
+      ]
     }
   },
   {
@@ -32855,7 +34080,7 @@
   },
   {
     "operationId": "detachOrganizationSaseSites",
-    "method": "DELETE",
+    "method": "POST",
     "path": "/organizations/{organizationId}/sase/sites/detach",
     "params": [
       {
@@ -32883,17 +34108,7 @@
         {
           "siteId": "1234567890"
         }
-      ],
-      "callback": {
-        "url": "https://webhook.site/28efa24e-f830-4d9f-a12b-fbb9e5035031",
-        "sharedSecret": "secret",
-        "httpServer": {
-          "id": "aHR0cHM6Ly93d3cuZXhhbXBsZS5jb20vd2ViaG9va3M="
-        },
-        "payloadTemplate": {
-          "id": "wpt_2100"
-        }
-      }
+      ]
     }
   },
   {
@@ -32917,7 +34132,7 @@
         "name": "updateOrganizationSaseSite",
         "in": "body",
         "type": "object",
-        "required": true
+        "required": false
       }
     ],
     "tags": [
@@ -35253,6 +36468,77 @@
     "summary": "Returns the current Air Marshal settings for this network"
   },
   {
+    "operationId": "getOrganizationWirelessClientsConnectionsImpactedByNetworkBySsid",
+    "method": "GET",
+    "path": "/organizations/{organizationId}/wireless/clients/connections/impacted/byNetwork/bySsid",
+    "params": [
+      {
+        "name": "organizationId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "networkIds",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "networkGroupIds",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "t0",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "t1",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "timespan",
+        "in": "query",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "perPage",
+        "in": "query",
+        "type": "integer",
+        "required": false
+      },
+      {
+        "name": "startingAfter",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "endingBefore",
+        "in": "query",
+        "type": "string",
+        "required": false
+      }
+    ],
+    "tags": [
+      "wireless",
+      "monitor",
+      "clients",
+      "connections",
+      "impacted",
+      "byNetwork",
+      "bySsid"
+    ],
+    "summary": "Summarize the number of wireless clients impacted by connection failures on network SSIDs, across an organization."
+  },
+  {
     "operationId": "getOrganizationWirelessClientsOverviewByDevice",
     "method": "GET",
     "path": "/organizations/{organizationId}/wireless/clients/overview/byDevice",
@@ -35308,6 +36594,268 @@
       "byDevice"
     ],
     "summary": "List access point client count at the moment in an organization"
+  },
+  {
+    "operationId": "getOrganizationWirelessClientsUsageByNetwork",
+    "method": "GET",
+    "path": "/organizations/{organizationId}/wireless/clients/usage/byNetwork",
+    "params": [
+      {
+        "name": "organizationId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "perPage",
+        "in": "query",
+        "type": "integer",
+        "required": false
+      },
+      {
+        "name": "startingAfter",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "endingBefore",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "t0",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "t1",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "timespan",
+        "in": "query",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "networkIds",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "networkGroupIds",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "gatewayNetworkIds",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "usageUnits",
+        "in": "query",
+        "type": "string",
+        "required": false
+      }
+    ],
+    "tags": [
+      "wireless",
+      "monitor",
+      "clients",
+      "usage",
+      "byNetwork"
+    ],
+    "summary": "Returns client usage details for wireless networks within an organization."
+  },
+  {
+    "operationId": "getOrganizationWirelessClientsUsageByNetworkBySsid",
+    "method": "GET",
+    "path": "/organizations/{organizationId}/wireless/clients/usage/byNetwork/bySsid",
+    "params": [
+      {
+        "name": "organizationId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "perPage",
+        "in": "query",
+        "type": "integer",
+        "required": false
+      },
+      {
+        "name": "startingAfter",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "endingBefore",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "t0",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "t1",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "timespan",
+        "in": "query",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "networkIds",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "networkGroupIds",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "ssidIds",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "ssidNames",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "gatewayNetworkIds",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "usageUnits",
+        "in": "query",
+        "type": "string",
+        "required": false
+      }
+    ],
+    "tags": [
+      "wireless",
+      "monitor",
+      "clients",
+      "usage",
+      "byNetwork",
+      "bySsid"
+    ],
+    "summary": "Returns client usage details for wireless network SSIDs within an organization."
+  },
+  {
+    "operationId": "getOrganizationWirelessClientsUsageBySsid",
+    "method": "GET",
+    "path": "/organizations/{organizationId}/wireless/clients/usage/bySsid",
+    "params": [
+      {
+        "name": "organizationId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "perPage",
+        "in": "query",
+        "type": "integer",
+        "required": false
+      },
+      {
+        "name": "startingAfter",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "endingBefore",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "t0",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "t1",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "timespan",
+        "in": "query",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "ssidNames",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "networkIds",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "networkGroupIds",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "gatewayNetworkIds",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "usageUnits",
+        "in": "query",
+        "type": "string",
+        "required": false
+      }
+    ],
+    "tags": [
+      "wireless",
+      "monitor",
+      "clients",
+      "usage",
+      "bySsid"
+    ],
+    "summary": "Returns client usage details for SSIDs within an organization."
   },
   {
     "operationId": "getOrganizationWirelessDevicesChannelUtilizationByDevice",
@@ -37221,6 +38769,783 @@
       "byNetwork"
     ],
     "summary": "Returns an array of objects, each containing SSID OpenRoaming configs for the corresponding network"
+  },
+  {
+    "operationId": "createOrganizationWirelessSsidsProfile",
+    "method": "POST",
+    "path": "/organizations/{organizationId}/wireless/ssids/profiles",
+    "params": [
+      {
+        "name": "organizationId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "createOrganizationWirelessSsidsProfile",
+        "in": "body",
+        "type": "object",
+        "required": true
+      }
+    ],
+    "tags": [
+      "wireless",
+      "configure",
+      "ssids",
+      "profiles"
+    ],
+    "summary": "Create a new SSID profile in an organization",
+    "bodyExample": {
+      "name": "Guest Profile",
+      "precedence": {
+        "radius": "profile"
+      },
+      "ssid": {
+        "name": "SSID name",
+        "advertisement": {
+          "enabled": true
+        },
+        "security": {
+          "mode": "psk",
+          "protocol": "WPA3 only",
+          "encryption": {
+            "ciphers": [
+              "GCMP 256"
+            ],
+            "akms": [
+              "SAE",
+              "SAE-EXT"
+            ],
+            "passphrase": "example-passphrase",
+            "dot11w": {
+              "enabled": true,
+              "required": true
+            },
+            "dot11r": {
+              "enabled": false,
+              "adaptive": false
+            }
+          },
+          "identityPassphrase": {
+            "personalNetwork": {
+              "enabled": true
+            }
+          }
+        },
+        "radius": {
+          "servers": [
+            {
+              "id": "1"
+            }
+          ],
+          "accounting": {
+            "enabled": true,
+            "updateInterval": 60
+          },
+          "policies": {
+            "failover": {
+              "mode": "deny"
+            },
+            "loadBalancing": {
+              "mode": "priority"
+            },
+            "fallback": {
+              "enabled": false
+            },
+            "attribute": "Filter-Id"
+          },
+          "proxy": {
+            "enabled": false
+          },
+          "testing": {
+            "enabled": true
+          },
+          "identifiers": {
+            "calledStation": "1",
+            "nas": "some-nas-identifier"
+          },
+          "das": {
+            "coa": {
+              "enabled": true
+            }
+          },
+          "eapTimers": {
+            "timeout": 5,
+            "identity": {
+              "maxRetries": 5,
+              "timeout": 5
+            },
+            "maxRetries": 2,
+            "eapolKey": {
+              "maxRetries": 2,
+              "timeoutInMs": 5000
+            }
+          }
+        },
+        "addressing": {
+          "mode": "Bridge mode",
+          "bonjourForwarding": {
+            "enabled": true,
+            "rules": [
+              {
+                "description": "Desc",
+                "vlan": {
+                  "id": 1
+                },
+                "services": [
+                  "All Services"
+                ]
+              }
+            ]
+          },
+          "mdns": {
+            "enabled": true,
+            "rules": [
+              {
+                "services": [
+                  "airplay"
+                ]
+              }
+            ]
+          },
+          "radius": {
+            "guest": {
+              "vlan": {
+                "enabled": true
+              }
+            },
+            "overrideVlanTag": false
+          }
+        },
+        "splash": {
+          "mode": "click-through",
+          "captivePortal": {
+            "provider": "hosted",
+            "external": {
+              "url": "https://example.com/splash"
+            },
+            "hosted": {
+              "theme": {
+                "id": "c3ddcb4f16785ee747ab5ffc10867d6c8ea704be"
+              },
+              "language": {
+                "code": "EN"
+              },
+              "consent": {
+                "required": true,
+                "message": "By continuing, you agree to our terms and conditions."
+              }
+            }
+          },
+          "redirect": {
+            "override": {
+              "enabled": true,
+              "url": "https://example.com/redirect"
+            }
+          },
+          "timeout": 1440,
+          "auth": {
+            "simultaneousLogins": {
+              "enabled": false
+            },
+            "oauth": {
+              "domains": [
+                "example.com",
+                "subdomain.example.com"
+              ]
+            }
+          },
+          "controllerUnreachable": {
+            "mode": "default"
+          },
+          "preAccess": {
+            "mode": "block-all",
+            "walledGarden": {
+              "enabled": true,
+              "ranges": [
+                "192.168.1.0/24",
+                "10.0.0.0/8"
+              ]
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "operationId": "getOrganizationWirelessSsidsProfiles",
+    "method": "GET",
+    "path": "/organizations/{organizationId}/wireless/ssids/profiles",
+    "params": [
+      {
+        "name": "organizationId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "sortBy",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "sortOrder",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "profileIds",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "perPage",
+        "in": "query",
+        "type": "integer",
+        "required": false
+      },
+      {
+        "name": "startingAfter",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "endingBefore",
+        "in": "query",
+        "type": "string",
+        "required": false
+      }
+    ],
+    "tags": [
+      "wireless",
+      "configure",
+      "ssids",
+      "profiles"
+    ],
+    "summary": "Returns the SSID profiles for an organization"
+  },
+  {
+    "operationId": "createOrganizationWirelessSsidsProfilesAssignment",
+    "method": "POST",
+    "path": "/organizations/{organizationId}/wireless/ssids/profiles/assignments",
+    "params": [
+      {
+        "name": "organizationId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "createOrganizationWirelessSsidsProfilesAssignment",
+        "in": "body",
+        "type": "object",
+        "required": true
+      }
+    ],
+    "tags": [
+      "wireless",
+      "configure",
+      "ssids",
+      "profiles",
+      "assignments"
+    ],
+    "summary": "Assigns an SSID profile to an SSID in the organization",
+    "bodyExample": {
+      "profile": {
+        "id": "123"
+      },
+      "ssid": {
+        "id": "123",
+        "number": 1
+      },
+      "network": {
+        "id": "N_12345"
+      }
+    }
+  },
+  {
+    "operationId": "deleteOrganizationWirelessSsidsProfilesAssignments",
+    "method": "DELETE",
+    "path": "/organizations/{organizationId}/wireless/ssids/profiles/assignments",
+    "params": [
+      {
+        "name": "organizationId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "deleteOrganizationWirelessSsidsProfilesAssignments",
+        "in": "body",
+        "type": "object",
+        "required": true
+      }
+    ],
+    "tags": [
+      "wireless",
+      "configure",
+      "ssids",
+      "profiles",
+      "assignments"
+    ],
+    "summary": "Unassigns the SSID profile assigned to an SSID",
+    "bodyExample": {
+      "ssid": {
+        "id": "123",
+        "number": 1
+      },
+      "network": {
+        "id": "N_12345"
+      }
+    }
+  },
+  {
+    "operationId": "getOrganizationWirelessSsidsProfilesAssignments",
+    "method": "GET",
+    "path": "/organizations/{organizationId}/wireless/ssids/profiles/assignments",
+    "params": [
+      {
+        "name": "organizationId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "networkIds",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "ssidIds",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "profileIds",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "perPage",
+        "in": "query",
+        "type": "integer",
+        "required": false
+      },
+      {
+        "name": "startingAfter",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "endingBefore",
+        "in": "query",
+        "type": "string",
+        "required": false
+      }
+    ],
+    "tags": [
+      "wireless",
+      "configure",
+      "ssids",
+      "profiles",
+      "assignments"
+    ],
+    "summary": "List the SSID profile assignments in an organization"
+  },
+  {
+    "operationId": "getOrganizationWirelessSsidsProfilesAssignmentsByNetwork",
+    "method": "GET",
+    "path": "/organizations/{organizationId}/wireless/ssids/profiles/assignments/byNetwork",
+    "params": [
+      {
+        "name": "organizationId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "networkIds",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "profileIds",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "networkGroupIds",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "includeAllNetworks",
+        "in": "query",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "excludeProfileIds",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "sortBy",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "sortOrder",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "search",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "perPage",
+        "in": "query",
+        "type": "integer",
+        "required": false
+      },
+      {
+        "name": "startingAfter",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "endingBefore",
+        "in": "query",
+        "type": "string",
+        "required": false
+      }
+    ],
+    "tags": [
+      "wireless",
+      "configure",
+      "ssids",
+      "profiles",
+      "assignments",
+      "byNetwork"
+    ],
+    "summary": "List the SSID profile assignments in an organization, grouped by network"
+  },
+  {
+    "operationId": "getOrganizationWirelessSsidsProfilesOverviews",
+    "method": "GET",
+    "path": "/organizations/{organizationId}/wireless/ssids/profiles/overviews",
+    "params": [
+      {
+        "name": "organizationId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "sortBy",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "sortOrder",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "profileIds",
+        "in": "query",
+        "type": "array",
+        "required": false
+      },
+      {
+        "name": "perPage",
+        "in": "query",
+        "type": "integer",
+        "required": false
+      },
+      {
+        "name": "startingAfter",
+        "in": "query",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "endingBefore",
+        "in": "query",
+        "type": "string",
+        "required": false
+      }
+    ],
+    "tags": [
+      "wireless",
+      "configure",
+      "ssids",
+      "profiles",
+      "overviews"
+    ],
+    "summary": "Returns the SSID profiles' overview information for an organization"
+  },
+  {
+    "operationId": "updateOrganizationWirelessSsidsProfile",
+    "method": "PUT",
+    "path": "/organizations/{organizationId}/wireless/ssids/profiles/{id}",
+    "params": [
+      {
+        "name": "organizationId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "id",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "updateOrganizationWirelessSsidsProfile",
+        "in": "body",
+        "type": "object",
+        "required": false
+      }
+    ],
+    "tags": [
+      "wireless",
+      "configure",
+      "ssids",
+      "profiles"
+    ],
+    "summary": "Update this SSID profile",
+    "bodyExample": {
+      "name": "Guest Profile",
+      "ssid": {
+        "name": "SSID name",
+        "advertisement": {
+          "enabled": true
+        },
+        "security": {
+          "mode": "psk",
+          "protocol": "WPA3 only",
+          "encryption": {
+            "ciphers": [
+              "GCMP 256"
+            ],
+            "akms": [
+              "SAE",
+              "SAE-EXT"
+            ],
+            "passphrase": "example-passphrase",
+            "dot11w": {
+              "enabled": true,
+              "required": true
+            },
+            "dot11r": {
+              "enabled": false,
+              "adaptive": false
+            }
+          },
+          "identityPassphrase": {
+            "personalNetwork": {
+              "enabled": true
+            }
+          }
+        },
+        "radius": {
+          "servers": [
+            {
+              "id": "1"
+            }
+          ],
+          "accounting": {
+            "enabled": true,
+            "updateInterval": 60
+          },
+          "policies": {
+            "failover": {
+              "mode": "deny"
+            },
+            "loadBalancing": {
+              "mode": "priority"
+            },
+            "fallback": {
+              "enabled": false
+            },
+            "attribute": "Filter-Id"
+          },
+          "proxy": {
+            "enabled": false
+          },
+          "testing": {
+            "enabled": true
+          },
+          "identifiers": {
+            "calledStation": "1",
+            "nas": "some-nas-identifier"
+          },
+          "das": {
+            "coa": {
+              "enabled": true
+            }
+          },
+          "eapTimers": {
+            "timeout": 5,
+            "identity": {
+              "maxRetries": 5,
+              "timeout": 5
+            },
+            "maxRetries": 2,
+            "eapolKey": {
+              "maxRetries": 2,
+              "timeoutInMs": 5000
+            }
+          }
+        },
+        "addressing": {
+          "bonjourForwarding": {
+            "enabled": true,
+            "rules": [
+              {
+                "description": "Desc",
+                "vlan": {
+                  "id": 1
+                },
+                "services": [
+                  "All Services"
+                ]
+              }
+            ]
+          },
+          "mdns": {
+            "enabled": true,
+            "rules": [
+              {
+                "services": [
+                  "airplay"
+                ]
+              }
+            ]
+          },
+          "radius": {
+            "guest": {
+              "vlan": {
+                "enabled": true
+              }
+            },
+            "overrideVlanTag": false
+          }
+        },
+        "splash": {
+          "mode": "click-through",
+          "captivePortal": {
+            "provider": "hosted",
+            "external": {
+              "url": "https://example.com/splash"
+            },
+            "hosted": {
+              "theme": {
+                "id": "c3ddcb4f16785ee747ab5ffc10867d6c8ea704be"
+              },
+              "language": {
+                "code": "EN"
+              },
+              "consent": {
+                "required": true,
+                "message": "By continuing, you agree to our terms and conditions."
+              }
+            }
+          },
+          "redirect": {
+            "override": {
+              "enabled": true,
+              "url": "https://example.com/redirect"
+            }
+          },
+          "timeout": 1440,
+          "auth": {
+            "simultaneousLogins": {
+              "enabled": false
+            },
+            "oauth": {
+              "domains": [
+                "example.com",
+                "subdomain.example.com"
+              ]
+            }
+          },
+          "controllerUnreachable": {
+            "mode": "default"
+          },
+          "preAccess": {
+            "mode": "block-all",
+            "walledGarden": {
+              "enabled": true,
+              "ranges": [
+                "192.168.1.0/24",
+                "10.0.0.0/8"
+              ]
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "operationId": "deleteOrganizationWirelessSsidsProfile",
+    "method": "DELETE",
+    "path": "/organizations/{organizationId}/wireless/ssids/profiles/{id}",
+    "params": [
+      {
+        "name": "organizationId",
+        "in": "path",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "id",
+        "in": "path",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "tags": [
+      "wireless",
+      "configure",
+      "ssids",
+      "profiles"
+    ],
+    "summary": "Delete an SSID profile"
   },
   {
     "operationId": "getOrganizationWirelessSsidsStatusesByDevice",

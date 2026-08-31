@@ -1,11 +1,11 @@
 # @kootzer/meraki-dashboard-api-v1
 
-[![published](https://static.production.devnetcloud.com/codeexchange/assets/images/devnet-published.svg)](https://developer.cisco.com/codeexchange/github/repo/Kootzer/node-red-contrib-meraki-dashboard-api-v1.0)
-[![Socket Badge](https://badge.socket.dev/npm/package/@kootzer/meraki-dashboard-api-v1/1.1.1)](https://badge.socket.dev/npm/package/@kootzer/meraki-dashboard-api-v1/1.1.1)
+[![published](https://static.production.devnetcloud.com/codeexchange/assets/images/devnet-published.svg)](https://developer.cisco.com/codeexchange/github/repo/Kootzer/meraki-dashboard-api-v1)
+[![Socket Badge](https://badge.socket.dev/npm/package/@kootzer/meraki-dashboard-api-v1/1.2.0)](https://badge.socket.dev/npm/package/@kootzer/meraki-dashboard-api-v1/1.2.0)
 
 A [Node-RED](https://nodered.org/) node for interacting with the [Cisco Meraki Dashboard API v1](https://developer.cisco.com/meraki/api-v1/).
 
-This node provides access to **957 API endpoints** covering the full Meraki Dashboard API v1.72.0, including devices, networks, organizations, appliances, switches, wireless, cameras, sensors, and more. All endpoints utilize OpenAPI Specification version 3, pulled directly from Meraki's [spec3.json](https://raw.githubusercontent.com/meraki/openapi/master/openapi/spec3.json) file from GitHub.
+This node provides access to **992 API endpoints** covering the full Meraki Dashboard API v1.73.0, including devices, networks, organizations, appliances, switches, wireless, cameras, sensors, and more. All endpoints utilize OpenAPI Specification version 3, pulled directly from Meraki's [spec3.json](https://raw.githubusercontent.com/meraki/openapi/master/openapi/spec3.json) file from GitHub.
 
 > **Note:** This endpoint count reflects Meraki's stable, generally-available (GA) API spec only. Cisco's [changelog](https://developer.cisco.com/meraki/whats-new/) may cite a higher total that also includes [Early API Access](https://developer.cisco.com/meraki/api-v1/api-reference-early-access-overview/) (beta) operations, which are excluded here since they're subject to breaking changes without notice.
 
