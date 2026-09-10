@@ -122,11 +122,38 @@ module.exports = function (RED) {
                             var nodeParamType = storedParamTypeMap[paramName] ||
                                 RED.util.getMessageProperty(msg, paramName);
 
+                            var resolved;
                             if (nodeParamType === 'str') {
-                                callParams[paramName] = nodeParam || undefined;
+                                resolved = nodeParam || undefined;
                             } else {
-                                callParams[paramName] = RED.util.getMessageProperty(msg, paramName);
+                                resolved = RED.util.getMessageProperty(msg, paramName);
                             }
+
+                            // A parameter that endpoints.json declares "type": "array" may be typed
+                            // directly into the editor field as a JSON array literal. Parse it here so
+                            // the field accepts the same shape a msg property can carry. Values that
+                            // already arrived as arrays are left untouched, and a bare scalar still
+                            // works: lib.js treats it as a one-element array.
+                            //
+                            // Keyed on paramDef.type from endpoints.json, NOT on nodeParamType: the
+                            // latter selects literal-vs-msg resolution above and means something else.
+                            if (paramDef.type === 'array' && typeof resolved === 'string') {
+                                var trimmedParam = resolved.trim();
+                                if (trimmedParam.charAt(0) === '[') {
+                                    try {
+                                        var parsedArray = JSON.parse(trimmedParam);
+                                        if (Array.isArray(parsedArray)) {
+                                            resolved = parsedArray;
+                                        }
+                                    } catch (e) {
+                                        node.error('Parameter \'' + paramName + '\' looks like a JSON array but could not be parsed: ' + e.message, msg);
+                                        errorFlag = true;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            callParams[paramName] = resolved;
                         }
                     }
 
@@ -170,10 +197,19 @@ module.exports = function (RED) {
                     node.status({});
                 }).catch(function (error) {
                     var message = null;
-                    if (error && error.body && error.body.message) {
+                    if (error && error.body && Array.isArray(error.body.errors) && error.body.errors.length) {
+                        // Meraki returns validation/authorization failures as { errors: [...] },
+                        // not { message }. Surface them so the reason reaches the debug pane.
+                        message = error.body.errors.join('; ');
+                    } else if (error && error.body && error.body.message) {
                         message = error.body.message;
+                    } else if (error && error.message) {
+                        message = error.message;
                     } else {
                         message = error;
+                    }
+                    if (error && error.response && error.response.statusCode) {
+                        message = 'HTTP ' + error.response.statusCode + ': ' + message;
                     }
                     node.error(message, setData(msg, error));
                     node.status({ fill: 'red', shape: 'ring', text: 'node-red:common.status.error' });
