@@ -31,7 +31,7 @@ Or, to install from a local copy of this folder instead of npm:
 Copy the 'meraki-dashboard-api-v1' folder into your Node-RED modules directory.
 
 Default location:
-C:\Users\username\\.node-red\node_modules\@kootzer\meraki-dashboard-api-v1
+C:\Users\username\\.node-red\node_modules\\@kootzer\meraki-dashboard-api-v1
 
 Then restart Node-RED.
 
